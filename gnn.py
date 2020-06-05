@@ -1,9 +1,10 @@
 class gnn:
-    def __init__(self, dims, activations, epochs, lr):
+    def __init__(self, dims, activations, epochs, lr, b_size):
         self.dims = dims
         self.activations = activations
         self.epochs = epochs
         self.lr = lr
+        self.b_size = b_size
         self.params={}
         self.grads={}
         self.initialize_parameters()
@@ -57,7 +58,7 @@ class gnn:
         AL = params["A" + str(L-1)]
         m = Y.shape[1]
         mse = np.sum((np.power(AL-Y,2)),axis=0,keepdims=True)
-        cost = (1/10) * np.sum((1./m) * (-np.dot(Y,np.log(AL).T) - np.dot(1-Y, np.log(1-AL).T)))
+        cost = (1/10) * np.sum((1./m) * (np.dot(Y,np.log(AL).T) - np.dot(1-Y, np.log(1-AL).T)))
         return cost
     
     def back_prop(self,Y):
@@ -67,7 +68,7 @@ class gnn:
         grads = self.grads
         activations = self.activations
         AL = params["A" + str(L-1)] 
-        dA = np.divide(AL - Y, (1 - AL) *  AL)
+        dA = np.divide(AL-Y, (1 - AL) *  AL)
         
         for l in reversed(range(1,L)):
             if(activations[l-1] == "relu"):
@@ -106,20 +107,31 @@ class gnn:
     def train(self, X, Y, X_val, Y_val):
         costs = []
         accus = []
+        b_size = self.b_size
+        m = Y.shape[1]
+        n_batches = m//b_size
         start_time = time.time()
         for i in range(self.epochs):
-            self.forward_prop(X)
-            
-            cost = self.compute_cost(Y)
-            self.back_prop(Y)
-            
-            self.update_params()
-            
-            accu = self.accuracy(X_val, Y_val)
+            ll = 0
+            for j in range(n_batches):
+                ul = ll + b_size-1
+                XT = X[:,ll:ul]
+                YT = Y[:,ll:ul]
+                self.forward_prop(XT)
+
+                cost = self.compute_cost(YT)
+                self.back_prop(YT)
+
+                self.update_params()
+
+                
+                ll += b_size
+                
             costs.append(cost)
+            accu = self.accuracy(X_val, Y_val)
             accus.append(accu)
             print('Epoch: {0}, Time Spent: {1:.2f}s, Accuracy: {2}, Cost: {3}'.format(
-                i+1, time.time() - start_time, accu, cost))
+                    i+1, time.time() - start_time, accu, cost))
         
         plt.plot(np.squeeze(costs))
         plt.ylabel('cost')
