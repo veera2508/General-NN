@@ -53,6 +53,7 @@ class gnn:
         self.params = params
     
     def compute_cost(self,Y):
+        #Change cost function accordingly
         L = len(self.dims)
         params = self.params
         AL = params["A" + str(L-1)]
@@ -93,10 +94,7 @@ class gnn:
     
     def accuracy(self, X_val, Y_val):
         self.forward_prop(X_val)
-        L = len(self.dims)
-        Y_predict = self.params["A"+str(L-1)]
-        Y_pred = np.argmax(Y_predict, axis = 0).reshape(1,-1)
-        m = Y_val.shape[1]
+        #Define how to get Y_pred based on your code implementation
         preds = ((Y_val) == (Y_pred))
         unique, counts = np.unique(preds, return_counts=True)
         preds = dict(zip(unique, counts))
