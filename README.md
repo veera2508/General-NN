@@ -7,4 +7,4 @@ General neural network code with flexible layers and activations.
 * The ouput matrix will be of shape (n_y,m) where n_y is the number of outputs and m is the number of training examples.
 * numpy required
 * Modify the cost function and the derivative of it accordingly.
-* Accuracy will be printed w.r.t the validation set given.
+* Accuracy will be printed w.r.t the validation set given. Pls modify the accuracy function accordingly
